@@ -15,8 +15,7 @@ router.post('/register', (req, res) => {
   Users.add(user)
   .then(saved => {
     const token = signToken(saved)
-    const payload = {...saved, token: token}
-    res.status(201).json(payload)
+    res.status(201).json({token: token})
   })
   .catch(error => {
     console.log(error)
@@ -32,11 +31,29 @@ router.post('/login', (req, res) => {
   .then(user => {
     if(user && bcrypt.compareSync(password, user.password)){
       const token = signToken(user)
-      res.status(200).json({message: `Welcome back ${user.username}`, token })
+      res.status(200).json({
+        message: `Welcome back ${user.username}`, 
+        id: user.id,
+        token 
+      })
     } else {
       res.status(401).json({message: "Invalid Credentials."})
     }
   })
+});
+
+router.get("/logout", (req, res) => {
+  if(req.session){
+    req.session.destroy(error => {
+      if(error){
+        res.status(500)
+      } else {
+
+      }
+    })
+  } else {
+
+  }
 });
 
 function signToken(user){
@@ -45,7 +62,7 @@ function signToken(user){
     username: user.username
   };
   const options = {
-
+    expiresIn: "1d"
   };
   return jwt.sign(payload, jwtSecret, options)
 };
